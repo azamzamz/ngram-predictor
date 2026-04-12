@@ -191,7 +191,7 @@ def main():
     sentences = normalizer.sentence_tokenize(text)
 
     # Only use first 100 sentences during development
-    sentences = sentences[:100]
+    #sentences = sentences[:100]
 
     print("Normalizing and word tokenizing...")
     tokenized = []
