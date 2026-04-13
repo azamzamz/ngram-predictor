@@ -115,7 +115,7 @@ class NGramModel:
         """
         Backoff lookup: try the highest-order context first, fall back to lower
         orders down to 1-gram. Return a dict of word probabilities from the
-        highest order that matches.
+        highest order that matches and has more than one candidate.
 
         Parameters:
             context (list): List of context words.
@@ -133,9 +133,11 @@ class NGramModel:
             ctx_str = " ".join(ctx)
             key = f"{order}gram"
             if key in self.probabilities and ctx_str in self.probabilities[key]:
-                return self.probabilities[key][ctx_str]
+                candidates = self.probabilities[key][ctx_str]
+                if len(candidates) > 1:
+                    return candidates
 
-        return {}
+        return self.probabilities.get("1gram", {})
 
     def save_model(self, model_path):
         """
@@ -151,7 +153,7 @@ class NGramModel:
         if folder:
             os.makedirs(folder, exist_ok=True)
         with open(model_path, "w", encoding="utf-8") as f:
-            json.dump(self.probabilities, f)
+            json.dump(self.probabilities, f, indent=2)
         print(f"Model saved to {model_path}")
 
     def save_vocab(self, vocab_path):
@@ -168,7 +170,7 @@ class NGramModel:
         if folder:
             os.makedirs(folder, exist_ok=True)
         with open(vocab_path, "w", encoding="utf-8") as f:
-            json.dump(list(self.vocab), f)
+            json.dump(list(self.vocab), f, indent=2)
         print(f"Vocabulary saved to {vocab_path}")
 
     def load(self, model_path, vocab_path):

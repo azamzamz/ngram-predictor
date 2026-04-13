@@ -14,13 +14,15 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 
 class Normalizer:
     """
-    Responsible for loading raw text files, stripping Gutenberg headers and footers,
-    normalizing text, tokenizing into sentences and words, and saving the result.
+    Responsible for loading raw text files, stripping Gutenberg headers and footers
+    from each file individually, normalizing text, tokenizing into sentences and words,
+    and saving the result.
     """
 
     def load(self, folder_path):
         """
-        Load all .txt files from a folder and return their combined text.
+        Load all .txt files from a folder, strip Gutenberg headers and footers
+        from each file individually, and return their combined text.
 
         Parameters:
             folder_path (str): Path to the folder containing .txt files.
@@ -33,7 +35,9 @@ class Normalizer:
             if filename.endswith(".txt"):
                 filepath = os.path.join(folder_path, filename)
                 with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-                    combined += f.read() + "\n"
+                    text = f.read()
+                text = self.strip_gutenberg(text)
+                combined += text + "\n"
         return combined
 
     def strip_gutenberg(self, text):
@@ -171,10 +175,10 @@ class Normalizer:
 def main():
     """
     Entry point for running the Normalizer module in isolation.
-    Processes the first 100 sentences of the training corpus as a sample.
+    Processes the full training corpus.
     """
     from dotenv import load_dotenv
-    load_dotenv("config/.env")
+    load_dotenv("config/.env", override=True)
 
     train_dir = os.getenv("TRAIN_RAW_DIR")
     train_tokens = os.getenv("TRAIN_TOKENS")
@@ -184,14 +188,11 @@ def main():
     print("Loading raw text...")
     text = normalizer.load(train_dir)
 
-    print("Stripping Gutenberg header and footer...")
-    text = normalizer.strip_gutenberg(text)
-
-    print("Sentence tokenizing before normalization...")
+    print("Sentence tokenizing...")
     sentences = normalizer.sentence_tokenize(text)
 
     # Only use first 100 sentences during development
-    #sentences = sentences[:100]
+    # sentences = sentences[:100]
 
     print("Normalizing and word tokenizing...")
     tokenized = []
